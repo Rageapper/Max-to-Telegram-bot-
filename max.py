@@ -111,7 +111,16 @@ class MaxClient:
             ("Cache-Control", "no-cache"),
             ("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")
         ]
-        self.websocket = connect("wss://ws-api.oneme.ru/websocket", additional_headers=headers)
+        # Отключаем прокси для WebSocket (PythonAnywhere блокирует через прокси)
+        import os
+        proxy_env_backup = {k: os.environ.pop(k, None) for k in ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']}
+        try:
+            self.websocket = connect("wss://ws-api.oneme.ru/websocket", additional_headers=headers)
+        finally:
+            # Восстанавливаем переменные окружения
+            for k, v in proxy_env_backup.items():
+                if v is not None:
+                    os.environ[k] = v
         self.websocket.send(self.user_agent)
         user_agent_response = self.websocket.recv()
         
