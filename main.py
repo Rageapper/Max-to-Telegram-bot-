@@ -1,7 +1,7 @@
 from max import MaxClient as Client
 from filters import filters
 from classes import Message
-from telegram import send_to_telegram
+from telegram_api import send_to_telegram
 import time, os, sys
 from dotenv import load_dotenv
 

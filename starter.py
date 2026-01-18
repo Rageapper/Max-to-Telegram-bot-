@@ -2,7 +2,7 @@ import subprocess
 import time
 import sys, os
 import datetime
-from telegram import send_to_telegram
+from telegram_api import send_to_telegram
 from dotenv import load_dotenv
 
 load_dotenv()
