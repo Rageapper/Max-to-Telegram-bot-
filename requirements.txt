@@ -1,1 +1,9 @@
-﻿certifi==2025.8.3charset-normalizer==3.4.3idna==3.10maxlib==0.1b1python-dotenv==1.1.1python-telegram-bot==21.0.1requests==2.32.5urllib3==2.5.0websockets==15.0.1
+﻿certifi==2025.8.3
+charset-normalizer==3.4.3
+idna==3.10
+maxlib==0.1b1
+python-dotenv==1.1.1
+python-telegram-bot==21.0.1
+requests==2.32.5
+urllib3==2.5.0
+websockets==15.0.1
