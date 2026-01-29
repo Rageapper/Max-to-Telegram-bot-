@@ -49,7 +49,7 @@ MAX_TOKEN=ваш_токен_max
 MAX_CHAT_IDS=id_чата_max (несколько через запятую)
 TG_BOT_TOKEN=токен_telegram_бота
 TG_CHAT_ID=id_чата_telegram
-MONITOR_ID=id_чата_для_мониторинга (опционально)
+MONITOR_ID=id_чата_для_мониторинга (Не обязательно)
 ```
 
 ### 4. Запуск
