@@ -1,5 +1,8 @@
 import requests, json
 
+# Служебные типы вложений, которые нужно игнорировать (не показывать пользователю)
+SERVICE_ATTACH_TYPES = {"CONTROL", "READ", "TYPING", "PRESENCE"}
+
 def handle_attach(attach: dict) -> str:
     match attach["_type"]:
         case "FILE":
@@ -31,6 +34,16 @@ def send_to_telegram(TG_BOT_TOKEN: str="", TG_CHAT_ID: int = 0, caption: str = "
                     item["caption"] = caption
                     item["parse_mode"] = "HTML"
                 media.append(item)
+        
+        # Фильтруем служебные вложения (CONTROL и др.) - не показываем их пользователю
+        not_handled_attachs = [attach for attach in not_handled_attachs if attach.get("_type") not in SERVICE_ATTACH_TYPES]
+        
+        # Если все вложения были служебными и нет медиа - отправляем просто текст
+        if not media and not not_handled_attachs:
+            if caption:
+                send_to_telegram(TG_BOT_TOKEN, TG_CHAT_ID, caption)
+            return
+        
         if not_handled_attachs:
             if media:
                 print(not_handled_attachs)
@@ -39,12 +52,14 @@ def send_to_telegram(TG_BOT_TOKEN: str="", TG_CHAT_ID: int = 0, caption: str = "
                 send_to_telegram(TG_BOT_TOKEN, TG_CHAT_ID, caption + f"\n\nНеобработанные файлы: " + ', '.join(handle_attach(attach) for attach in not_handled_attachs))
                 return
 
-        payload = {
-            "chat_id": TG_CHAT_ID,
-            "media": json.dumps(media)
-        }
-        resp = requests.post(api_url, data=payload)
-        print(resp.json())
+        # Если есть медиа - отправляем его
+        if media:
+            payload = {
+                "chat_id": TG_CHAT_ID,
+                "media": json.dumps(media)
+            }
+            resp = requests.post(api_url, data=payload)
+            print(resp.json())
         return
 
     # если фоток больше 10 — разобьём на несколько альбомов

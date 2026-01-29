@@ -6,7 +6,7 @@ import sys
 
 try:
     client = Client()
-    phone_number = "+79506771496"  # Replace with your phone number
+    phone_number = "+7XXXXXXXXXX"  # Replace with your phone number
     
     print(f"Попытка авторизации для номера: {phone_number}")
     print("Подключение к серверу MAX...")

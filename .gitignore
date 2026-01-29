@@ -44,6 +44,9 @@ venv.bak/
 *.log
 client.log
 
+# Archives
+*.zip
+
 # OS
 Thumbs.db
 desktop.ini

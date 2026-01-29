@@ -49,39 +49,79 @@ def onconnect():
 
 @client.on_message(filters.any())
 def onmessage(client: Client, message: Message):
-    # Отладочный вывод для проверки получения сообщений
-    print(f"[DEBUG] Получено сообщение: chat_id={message.chat.id}, text_length={len(message.text) if message.text else 0}, status={message.status}")
-    print(f"[DEBUG] Отслеживаемые чаты: {MAX_CHAT_IDS}")
-    print(f"[DEBUG] Сообщение в отслеживаемом чате: {message.chat.id in MAX_CHAT_IDS}")
-    
-    if message.chat.id in MAX_CHAT_IDS and message.status != "REMOVED":
-        msg_text = message.text
-        msg_attaches = message.attaches
-        name = message.user.contact.names[0].name if message.user and message.user.contact else "Неизвестно"
-        if "link" in message.kwargs.keys():
-            if "type" in message.kwargs["link"]:
-                if message.kwargs["link"]["type"] == "REPLY": # TODO
-                    ...
-                if message.kwargs["link"]["type"] == "FORWARD":
-                    msg_text = message.kwargs["link"]["message"]["text"]
-                    msg_attaches = message.kwargs["link"]["message"]["attaches"]
-                    forwarded_msg_author = client.get_user(id=message.kwargs["link"]["message"]["sender"], _f=1)
-                    name = f"{name}\n(Переслано: {forwarded_msg_author.contact.names[0].name})"
-
-        if msg_text != "" or msg_attaches != []:
-            print(f"[ОТПРАВКА] Отправка в Telegram: от {name}, текст: {msg_text[:50]}...")
+    try:
+        # Отладочный вывод для проверки получения сообщений
+        is_my_message = False
+        if client.me and client.me.contact:
+            is_my_message = (message.sender == client.me.contact.id)
+        
+        print(f"[DEBUG] Получено сообщение:")
+        print(f"  - chat_id={message.chat.id}")
+        print(f"  - sender={message.sender}")
+        print(f"  - type={message.type}")
+        print(f"  - status={message.status}")
+        print(f"  - text_length={len(message.text) if message.text else 0}")
+        print(f"  - is_my_message={is_my_message}")
+        print(f"  - отслеживаемые чаты: {MAX_CHAT_IDS}")
+        print(f"  - сообщение в отслеживаемом чате: {message.chat.id in MAX_CHAT_IDS}")
+        
+        if message.chat.id in MAX_CHAT_IDS and message.status != "REMOVED":
+            msg_text = message.text or ""
+            msg_attaches = message.attaches or []
+            
+            # Безопасное получение имени отправителя
+            name = "Неизвестно"
             try:
-                send_to_telegram(
-                    TG_BOT_TOKEN,
-                    TG_CHAT_ID,
-                    f"<blockquote>{name}</blockquote>\n{msg_text}" if msg_text != "" else f"<blockquote>{name}</blockquote>",
-                    msg_attaches
-                    # [attach['baseUrl'] for attach in msg_attaches if 'baseUrl' in attach]
-                )
-                print(f"[УСПЕХ] Сообщение отправлено в Telegram")
+                if message.user and message.user.contact:
+                    if message.user.contact.names and len(message.user.contact.names) > 0:
+                        name = message.user.contact.names[0].name
+                    elif message.user.contact.phone:
+                        name = message.user.contact.phone
+                    else:
+                        name = f"ID: {message.sender}"
+                else:
+                    name = f"ID: {message.sender}"
             except Exception as e:
-                print(f"[ОШИБКА] Ошибка при отправке в Telegram: {e}")
-                import traceback
-                traceback.print_exc()
+                print(f"[WARNING] Ошибка при получении имени отправителя: {e}")
+                name = f"ID: {message.sender}"
+            
+            # Обработка пересланных сообщений
+            if "link" in message.kwargs.keys():
+                if "type" in message.kwargs["link"]:
+                    if message.kwargs["link"]["type"] == "REPLY": # TODO
+                        ...
+                    if message.kwargs["link"]["type"] == "FORWARD":
+                        try:
+                            msg_text = message.kwargs["link"]["message"].get("text", "")
+                            msg_attaches = message.kwargs["link"]["message"].get("attaches", [])
+                            forwarded_msg_author = client.get_user(id=message.kwargs["link"]["message"]["sender"], _f=1)
+                            forwarded_name = "Неизвестно"
+                            if forwarded_msg_author and forwarded_msg_author.contact:
+                                if forwarded_msg_author.contact.names and len(forwarded_msg_author.contact.names) > 0:
+                                    forwarded_name = forwarded_msg_author.contact.names[0].name
+                                elif forwarded_msg_author.contact.phone:
+                                    forwarded_name = forwarded_msg_author.contact.phone
+                            name = f"{name}\n(Переслано: {forwarded_name})"
+                        except Exception as e:
+                            print(f"[WARNING] Ошибка при обработке пересланного сообщения: {e}")
+
+            if msg_text != "" or msg_attaches != []:
+                print(f"[ОТПРАВКА] Отправка в Telegram: от {name}, текст: {msg_text[:50] if msg_text else '(без текста)'}...")
+                try:
+                    send_to_telegram(
+                        TG_BOT_TOKEN,
+                        TG_CHAT_ID,
+                        f"<blockquote>{name}</blockquote>\n{msg_text}" if msg_text != "" else f"<blockquote>{name}</blockquote>",
+                        msg_attaches
+                    )
+                    print(f"[УСПЕХ] Сообщение отправлено в Telegram")
+                except Exception as e:
+                    print(f"[ОШИБКА] Ошибка при отправке в Telegram: {e}")
+                    import traceback
+                    traceback.print_exc()
+    except Exception as e:
+        print(f"[ОШИБКА] Критическая ошибка при обработке сообщения: {e}")
+        import traceback
+        traceback.print_exc()
 client.run()
 
