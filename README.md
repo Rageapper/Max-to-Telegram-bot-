@@ -83,8 +83,8 @@ python starter.py
 ## 🆘 Поддержка
 
 По вопросам обращайтесь в [Telegram группу](https://t.me/qqdeath_dev)
+Идея: @intchaserlive
 
-Идея: [@intchaserlive](https://t.me/intchaserlive)
 ---
 
 ## 📄 Лицензия
