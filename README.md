@@ -84,7 +84,7 @@ python starter.py
 
 По вопросам обращайтесь в [Telegram группу](https://t.me/qqdeath_dev)
 
-**Идея:** [@intchaserlive](https://t.me/intchaserlive)
+Идея: [@intchaserlive](https://t.me/intchaserlive)
 ---
 
 ## 📄 Лицензия
